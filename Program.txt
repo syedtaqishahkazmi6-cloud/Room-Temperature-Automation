@@ -1,0 +1,40 @@
+#include <DHT.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define DHTPIN 2
+#define DHTTYPE DHT22
+#define RELAY_PIN 3
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+DHT dht(DHTPIN, DHTTYPE);
+
+void setup() {
+  pinMode(RELAY_PIN, OUTPUT);
+  dht.begin();
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  display.clearDisplay();
+  display.setTextColor(WHITE);
+}
+
+void loop() {
+  float t = dht.readTemperature();
+  if (isnan(t)) return;
+
+  display.clearDisplay();
+  display.setCursor(0,0);
+  display.print("Temp: "); display.print(t); display.print(" C");
+
+  if (t > 30.0) {
+    digitalWrite(RELAY_PIN, HIGH);
+    display.setCursor(0, 30); display.print("FAN: ON");
+  } else {
+    digitalWrite(RELAY_PIN, LOW);
+    display.setCursor(0, 30); display.print("FAN: OFF");
+  }
+  display.display();
+  delay(2000);
+}
